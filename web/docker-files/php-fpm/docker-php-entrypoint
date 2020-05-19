@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+USER_ID=`stat --printf=%u /var/www`
+
+if [ `getent passwd $USER_ID | wc -l` -eq 0 ]; then
+	useradd -u $USER_ID -M user
+    USER=user
+else
+    USER=`getent passwd $USER_ID | cut -d: -f1`
+fi
+
+sed -i "s/user = .*/user = $USER/g" /usr/local/etc/php-fpm.d/www.conf
+sed -i "s/group = .*/group = $USER/g" /usr/local/etc/php-fpm.d/www.conf
+
+if [ X$XDEBUG_HOST != X ]; then
+    sed -i "s/xdebug\\.remote_host=.*/xdebug.remote_host=$XDEBUG_HOST/g" /usr/local/etc/php/conf.d/xdebug.ini
+fi
+
+if [ X$XDEBUG_PORT != X ]; then
+    sed -i "s/xdebug\\.remote_port=.*/xdebug.remote_port=$XDEBUG_PORT/g" /usr/local/etc/php/conf.d/xdebug.ini
+fi
+
+if [ X$XDEBUG_IDE_KEY != X ]; then
+    sed -i "s/xdebug\\.idekey=.*/xdebug.idekey=$XDEBUG_IDE_KEY/g" /usr/local/etc/php/conf.d/xdebug.ini
+fi
+
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+	set -- php-fpm "$@"
+fi
+
+exec "$@" --allow-to-run-as-root
