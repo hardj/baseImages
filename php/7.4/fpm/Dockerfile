@@ -8,4 +8,4 @@ COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr
 
 RUN apk add --no-cache --virtual curl
 
-RUN install-php-extensions gd apcu ldap mysqli pdo_mysql amqp
+RUN install-php-extensions gd apcu ldap mysqli pdo_mysql amqp zip
